@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -5,86 +6,391 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080d1b">
 <title>Mission Master AI</title>
-<style>
-:root{color-scheme:dark;--bg:#080d1b;--panel:#111b2e;--line:#293b57;--muted:#a3b2c8;--cyan:#65dcff}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#1b3761,#080d1b 55%);color:#f4f7ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
-main{max-width:760px;margin:auto;padding:20px 15px 35px}.top{display:flex;gap:12px;align-items:center}.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#65dcff,#8274ff);display:grid;place-items:center;color:#08101d;font-size:24px;font-weight:900}h1{font-size:20px;margin:0}.sub,.muted{color:var(--muted);font-size:12px}.status{margin:19px 0;padding:11px 13px;background:#111c30;border:1px solid var(--line);border-radius:13px;font-size:13px;color:var(--muted)}.hero{text-align:center;padding:14px 0}.orb{width:112px;height:112px;margin:auto auto 12px;border-radius:50%;display:grid;place-items:center;font-size:42px;background:radial-gradient(circle at 35% 25%,#b3f5ff,#4789e8 45%,#26265f 78%);box-shadow:0 0 35px #46caff55}.card{background:#111b2eeb;border:1px solid var(--line);border-radius:17px;padding:14px;margin:12px 0}.chat{height:330px;overflow:auto;display:flex;flex-direction:column;gap:9px;margin-top:12px}.bubble{padding:11px 13px;border-radius:14px;max-width:92%;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.bot{background:#1b2b45;align-self:flex-start}.user{background:#16445f;align-self:flex-end}.controls{display:flex;gap:9px}.mic{width:58px;height:58px;border:0;border-radius:50%;background:linear-gradient(135deg,#65dcff,#8274ff);font-size:23px;flex-shrink:0}.mic.on{background:linear-gradient(135deg,#ff9d88,#ffcf70)}.entry{display:flex;gap:7px;flex:1}.entry input{min-width:0;flex:1;background:#080f1d;border:1px solid var(--line);border-radius:12px;padding:12px;color:white;font-size:15px}.btn{background:#1b3452;border:1px solid #385272;color:white;border-radius:12px;padding:0 14px;font-weight:650}.btn:disabled{opacity:.5}.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.chip{background:#152943;border:1px solid #354d6d;color:#dcecff;border-radius:99px;padding:8px 11px;font-size:12px}.small{font-size:11px;color:var(--muted);line-height:1.5;margin-top:10px}.footer{text-align:center;color:#8293ad;font-size:11px;margin-top:18px}
-</style></head>
-<body><main>
-<header class="top"><div class="logo">M</div><div><h1>Mission Master AI</h1><div class="sub">Your personal voice-first assistant · V0.2</div></div></header>
-<div class="status" id="status">● Ready · AI connection not checked yet</div>
-<section class="hero"><div class="orb">✦</div><h2 style="margin:0;font-size:20px">What shall we do today?</h2><p class="muted">Talk or type in English or Telugu.</p></section>
-<section class="card"><div class="muted">CONVERSATION</div><div class="chat" id="chat" aria-live="polite"><div class="bubble bot">Namaskaram! I am Mission Master AI. I can discuss questions using the connected AI brain. Try asking me something.</div></div></section>
-<section class="card">
-<div class="controls"><button class="mic" id="mic" title="Speak">🎙</button>
-  <button id="stopVoice" class="btn">⏹ Stop</button>
-  <button class="chip" onclick="clearMasterMemory()">
-  Clear Memory
-</button>
-  <div class="entry"><input id="message" placeholder="Ask Mission Master…" autocomplete="off"><button class="btn" id="send">Send</button></div></div>
-<div class="tools"><button class="chip" data-q="Explain AI agents in simple Telugu">Explain in Telugu</button><button class="chip" data-q="What can you help me with?">What can you do?</button><button class="chip" data-q="Give me today's NIFTY research checklist">NIFTY checklist</button></div>
-<div class="small">Voice recognition requires a supported browser and microphone permission. AI replies use your configured backend. Do not enter passwords, OTPs, card details or other secrets.</div>
-</section>
-<div class="footer">Mission Master AI · Personal prototype · You approve consequential actions</div>
-</main>
-<script>
-const API_BASE="https://mission-master-ai-api.chopparapardhu.workers.dev";
-const chat=document.getElementById("chat"), input=document.getElementById("message"), statusEl=document.getElementById("status"), send=document.getElementById("send");
-let history = [];
 
-try {
-  history = JSON.parse(
-    localStorage.getItem("mission_master_history") || "[]"
-  );
-} catch(e) {
-  history = [];
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #080d1b;
+  --panel: #111b2e;
+  --line: #293b57;
+  --muted: #a3b2c8;
 }
-  let appPassword=null;
-function bubble(text,role){let d=document.createElement("div");d.className="bubble "+(role==="user"?"user":"bot");d.textContent=text;chat.appendChild(d);chat.scrollTop=chat.scrollHeight}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 50% -10%,#1b3761,#080d1b 55%);
+  color: #f4f7ff;
+  font-family: system-ui,-apple-system,Segoe UI,sans-serif;
+  min-height: 100vh;
+}
+
+main {
+  max-width: 760px;
+  margin: auto;
+  padding: 20px 15px 35px;
+}
+
+.top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.logo {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: linear-gradient(135deg,#65dcff,#8274ff);
+  display: grid;
+  place-items: center;
+  color: #08101d;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+h1 { font-size: 20px; margin: 0; }
+
+.sub,.muted {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.status {
+  margin: 19px 0;
+  padding: 11px 13px;
+  background: #111c30;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.hero {
+  text-align: center;
+  padding: 14px 0;
+}
+
+.orb {
+  width: 112px;
+  height: 112px;
+  margin: auto auto 12px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 42px;
+  background: radial-gradient(circle at 35% 25%,#b3f5ff,#4789e8 45%,#26265f 78%);
+  box-shadow: 0 0 35px #46caff55;
+}
+
+.card {
+  background: #111b2eeb;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  padding: 14px;
+  margin: 12px 0;
+}
+
+.chat {
+  height: 330px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.bubble {
+  padding: 11px 13px;
+  border-radius: 14px;
+  max-width: 92%;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.bot {
+  background: #1b2b45;
+  align-self: flex-start;
+}
+
+.user {
+  background: #16445f;
+  align-self: flex-end;
+}
+
+.controls {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.mic {
+  width: 58px;
+  height: 58px;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#65dcff,#8274ff);
+  font-size: 23px;
+  flex-shrink: 0;
+}
+
+.mic.on {
+  background: linear-gradient(135deg,#ff9d88,#ffcf70);
+}
+
+.entry {
+  display: flex;
+  gap: 7px;
+  flex: 1;
+  min-width: 180px;
+}
+
+.entry input {
+  min-width: 0;
+  flex: 1;
+  background: #080f1d;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  color: white;
+  font-size: 15px;
+}
+
+.btn {
+  background: #1b3452;
+  border: 1px solid #385272;
+  color: white;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 650;
+}
+
+.btn:disabled,.mic:disabled {
+  opacity: .5;
+}
+
+.tools {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.chip {
+  background: #152943;
+  border: 1px solid #354d6d;
+  color: #dcecff;
+  border-radius: 99px;
+  padding: 8px 11px;
+  font-size: 12px;
+}
+
+.small {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-top: 10px;
+}
+
+.footer {
+  text-align: center;
+  color: #8293ad;
+  font-size: 11px;
+  margin-top: 18px;
+}
+</style>
+</head>
+
+<body>
+<main>
+
+<header class="top">
+  <div class="logo">M</div>
+  <div>
+    <h1>Mission Master AI</h1>
+    <div class="sub">Your personal voice-first assistant · V0.3</div>
+  </div>
+</header>
+
+<div class="status" id="status">
+  ● Ready · AI connection not checked yet
+</div>
+
+<section class="hero">
+  <div class="orb">✦</div>
+  <h2 style="margin:0;font-size:20px">What shall we do today?</h2>
+  <p class="muted">Talk or type in English or Telugu.</p>
+</section>
+
+<section class="card">
+  <div class="muted">CONVERSATION</div>
+  <div class="chat" id="chat" aria-live="polite"></div>
+</section>
+
+<section class="card">
+
+  <div class="controls">
+    <button class="mic" id="mic" title="Speak">🎙</button>
+    <button id="stopVoice" class="btn">⏹ Stop</button>
+    <button id="clearMemory" class="chip">Clear Memory</button>
+
+    <div class="entry">
+      <input
+        id="message"
+        placeholder="Ask Mission Master…"
+        autocomplete="off"
+      >
+      <button class="btn" id="send">Send</button>
+    </div>
+  </div>
+
+  <div class="tools">
+    <button class="chip" data-q="Explain AI agents in simple Telugu">
+      Explain in Telugu
+    </button>
+
+    <button class="chip" data-q="What can you help me with?">
+      What can you do?
+    </button>
+
+    <button class="chip" data-q="Give me today's NIFTY research checklist">
+      NIFTY checklist
+    </button>
+  </div>
+
+  <div class="small">
+    Voice recognition requires a supported browser and microphone permission.
+    AI replies use your configured backend.
+    Do not enter passwords, OTPs, card details or other secrets.
+  </div>
+
+</section>
+
+<div class="footer">
+  Mission Master AI · Personal prototype · You approve consequential actions
+</div>
+
+</main>
+
+<script>
+// ============================================
+// 1. CONFIGURATION
+// ============================================
+
+const API_BASE =
+  "https://mission-master-ai-api.chopparapardhu.workers.dev";
+
+const chat = document.getElementById("chat");
+const input = document.getElementById("message");
+const statusEl = document.getElementById("status");
+const send = document.getElementById("send");
+const mic = document.getElementById("mic");
+const stopVoice = document.getElementById("stopVoice");
+
+let appPassword = null;
+let history = [];
+let recognition = null;
+let isListening = false;
+
+
+// ============================================
+// 2. LOAD SAVED CONVERSATION
+// ============================================
+
+function loadHistory() {
+  try {
+    const saved = localStorage.getItem("mission_master_history");
+    const parsed = saved ? JSON.parse(saved) : [];
+
+    if (Array.isArray(parsed)) {
+      history = parsed.filter(item =>
+        item &&
+        (item.role === "user" || item.role === "assistant") &&
+        typeof item.content === "string"
+      );
+    }
+  } catch (error) {
+    history = [];
+  }
+
+  if (history.length > 0) {
+    history.forEach(item => {
+      bubble(
+        item.content,
+        item.role === "user" ? "user" : "assistant"
+      );
+    });
+  } else {
+    bubble(
+      "Namaskaram! I am Mission Master AI. I can discuss questions using the connected AI brain. Try asking me something.",
+      "assistant"
+    );
+  }
+}
+
+function saveHistory() {
+  try {
+    localStorage.setItem(
+      "mission_master_history",
+      JSON.stringify(history)
+    );
+  } catch (error) {
+    console.warn("Conversation could not be saved:", error);
+  }
+}
+
+
+// ============================================
+// 3. CHAT DISPLAY
+// ============================================
+
+function bubble(text, role) {
+  const d = document.createElement("div");
+
+  d.className =
+    "bubble " + (role === "user" ? "user" : "bot");
+
+  d.textContent = text;
+
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+
+// ============================================
+// 4. CLEAN MARKDOWN FOR SPEECH
+// ============================================
 
 function cleanForSpeech(text) {
-
   return text
-
-    // Remove code blocks
     .replace(/```[\s\S]*?```/g, " ")
-
-    // Remove horizontal separators
     .replace(/^\s*[-*_]{3,}\s*$/gm, " ")
-
-    // Remove Markdown table separator rows
     .replace(/^\s*\|?[\s:|-]{3,}\|?\s*$/gm, " ")
-
-    // Convert table columns into natural pauses
     .replace(/\|/g, ", ")
-
-    // Remove bold and italic symbols
     .replace(/\*\*|__/g, "")
     .replace(/[*_~]/g, "")
-
-    // Remove headings
     .replace(/^#{1,6}\s*/gm, "")
-
-    // Remove bullet symbols
     .replace(/^\s*[-+•]\s+/gm, "")
-
-    // Remove numbered list formatting
     .replace(/^\s*\d+[.)]\s+/gm, "")
-
-    // Convert Markdown links to their visible text
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-
-    // Remove remaining repeated separators
     .replace(/-{3,}/g, " ")
-
-    // Clean extra spaces and empty lines
     .replace(/[ \t]{2,}/g, " ")
     .replace(/\n{2,}/g, ". ")
     .trim();
 }
 
 
+// ============================================
+// 5. TEXT TO SPEECH
+// ============================================
+
 function getTeluguVoice() {
+  if (!("speechSynthesis" in window)) return null;
+
   const voices = speechSynthesis.getVoices();
 
   return voices.find(v =>
@@ -100,7 +406,6 @@ function speak(text) {
   speechSynthesis.cancel();
 
   const cleanText = cleanForSpeech(text);
-
   if (!cleanText) return;
 
   const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -122,63 +427,266 @@ function speak(text) {
   utterance.rate = 0.92;
   utterance.pitch = 1;
 
+  utterance.onstart = () => {
+    statusEl.textContent = "● Speaking…";
+  };
+
+  utterance.onend = () => {
+    if (!isListening) {
+      statusEl.textContent = "● Connected · Ready";
+    }
+  };
+
+  utterance.onerror = () => {
+    statusEl.textContent = "● Connected · Ready";
+  };
+
   speechSynthesis.speak(utterance);
 }
 
-// Load available voices
-speechSynthesis.onvoiceschanged = () => {
-  console.log("Available voices:", speechSynthesis.getVoices());
+if ("speechSynthesis" in window) {
+  speechSynthesis.onvoiceschanged = () => {
+    console.log("Available voices:", speechSynthesis.getVoices());
+  };
+}
+
+
+// ============================================
+// 6. CLEAR CONVERSATION MEMORY
+// ============================================
+
+function clearMasterMemory() {
+  history = [];
+
+  try {
+    localStorage.removeItem("mission_master_history");
+  } catch (error) {
+    console.warn("Could not clear saved history:", error);
+  }
+
+  chat.innerHTML = "";
+
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+  }
+
+  bubble(
+    "Memory cleared. Let's start a fresh conversation.",
+    "assistant"
+  );
+
+  statusEl.textContent = "● Ready · Fresh conversation";
+}
+
+document.getElementById("clearMemory").onclick =
+  clearMasterMemory;
+
+
+// ============================================
+// 7. ASK AI
+// ============================================
+
+async function ask(text) {
+  text = String(text || "").trim();
+
+  if (!text || send.disabled) return;
+
+  bubble(text, "user");
+  input.value = "";
+
+  send.disabled = true;
+  statusEl.textContent = "● Thinking…";
+
+  try {
+    if (!appPassword) {
+      appPassword = prompt(
+        "Enter your Mission Master private access password (not your Groq API key):"
+      );
+    }
+
+    if (!appPassword) {
+      throw new Error("Private access password was not entered.");
+    }
+
+    const response = await fetch(API_BASE + "/chat", {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + appPassword
+      },
+
+      body: JSON.stringify({
+        message: text,
+        history: history.slice(-12)
+      })
+    });
+
+    let data;
+
+    try {
+      data = await response.json();
+    } catch (error) {
+      throw new Error("Invalid response from the AI server.");
+    }
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        appPassword = null;
+      }
+
+      throw new Error(
+        data.error || "AI request failed. Please try again."
+      );
+    }
+
+    const answer =
+      data.reply || "I could not generate a reply.";
+
+    history.push(
+      { role: "user", content: text },
+      { role: "assistant", content: answer }
+    );
+
+    history = history.slice(-12);
+
+    saveHistory();
+
+    bubble(answer, "assistant");
+
+    speak(answer);
+
+    statusEl.textContent = "● Connected · Ready";
+
+  } catch (error) {
+    bubble(
+      "Connection note: " + error.message,
+      "assistant"
+    );
+
+    statusEl.textContent =
+      "● Needs setup / connection check";
+
+  } finally {
+    send.disabled = false;
+    input.focus();
+  }
+}
+
+
+// ============================================
+// 8. SEND BUTTON AND ENTER KEY
+// ============================================
+
+send.onclick = () => ask(input.value);
+
+input.addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    ask(input.value);
+  }
+});
+
+
+// ============================================
+// 9. QUICK PROMPT BUTTONS
+// ============================================
+
+document.querySelectorAll("[data-q]").forEach(button => {
+  button.onclick = () => ask(button.dataset.q);
+});
+
+
+// ============================================
+// 10. VOICE RECOGNITION
+// ============================================
+
+const SR =
+  window.SpeechRecognition ||
+  window.webkitSpeechRecognition;
+
+if (SR) {
+  recognition = new SR();
+
+  recognition.lang = "te-IN";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onstart = () => {
+    isListening = true;
+    mic.classList.add("on");
+    statusEl.textContent = "● Listening…";
+  };
+
+  recognition.onresult = event => {
+    const transcript =
+      event.results[0][0].transcript;
+
+    if (transcript) {
+      ask(transcript);
+    }
+  };
+
+  recognition.onerror = event => {
+    statusEl.textContent =
+      "Voice error: " + event.error;
+  };
+
+  recognition.onend = () => {
+    isListening = false;
+    mic.classList.remove("on");
+  };
+
+  mic.onclick = () => {
+    try {
+      if (isListening) {
+        recognition.stop();
+      } else {
+        if ("speechSynthesis" in window) {
+          speechSynthesis.cancel();
+        }
+
+        recognition.start();
+      }
+    } catch (error) {
+      statusEl.textContent =
+        "Wait a moment and try again.";
+    }
+  };
+
+} else {
+  mic.disabled = true;
+  mic.title =
+    "Speech recognition unavailable in this browser";
+}
+
+
+// ============================================
+// 11. STOP SPEECH AND MICROPHONE
+// ============================================
+
+stopVoice.onclick = () => {
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+  }
+
+  if (recognition && isListening) {
+    recognition.abort();
+  }
+
+  isListening = false;
+  mic.classList.remove("on");
+
+  statusEl.textContent =
+    "● Stopped · Ready for your next command";
 };
 
-  function clearMasterMemory() {
-  history = [];
 
-  localStorage.removeItem("mission_master_history");
+// ============================================
+// 12. START APP
+// ============================================
 
-  chat.innerHTML = "";
+loadHistory();
 
-  bubble("Memory cleared. Let's start a fresh conversation.", "assistant");
-}
-
-
- async function ask(text){
- text=text.trim();if(!text)return;
- bubble(text,"user");input.value="";send.disabled=true;statusEl.textContent="● Thinking…";
- try{
-  if(API_BASE.includes("YOUR-WORKER-NAME"))throw new Error("Backend URL not configured yet. Follow the Day 2 setup guide.");
-  if(!appPassword){appPassword=prompt("Enter your Mission Master private access password (not your Groq API key):");}
-  if(!appPassword)throw new Error("Private access password was not entered.");
-  const r=await fetch(API_BASE+"/chat",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+appPassword},body:JSON.stringify({message:text,history:history.slice(-12)})});
-  const data=await r.json();if(!r.ok)throw new Error(data.error||"AI request failed");
-  const answer=data.reply||"I could not generate a reply.";
-  history.push(
-  {role:"user",content:text},
-  {role:"assistant",content:answer}
-);
-
-history = history.slice(-12);
-
-localStorage.setItem(
-  "mission_master_history",
-  JSON.stringify(history)
-);
-  bubble(answer,"assistant");speak(answer);statusEl.textContent="● Connected · Ready";
- }catch(e){bubble("Connection note: "+e.message,"assistant");statusEl.textContent="● Needs setup / connection check";}
- finally{send.disabled=false;input.focus()}
-}
-send.onclick=()=>ask(input.value);input.addEventListener("keydown",e=>{if(e.key==="Enter")ask(input.value)});
-document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>ask(b.dataset.q));
-const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(SR){let rec = new SR();
-window.currentRecognition = rec;rec.lang="te-IN";rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{document.getElementById("mic").classList.add("on");statusEl.textContent="● Listening…"};rec.onend=()=>document.getElementById("mic").classList.remove("on");rec.onerror=e=>statusEl.textContent="Voice error: "+e.error;rec.onresult=e=>ask(e.results[0][0].transcript);document.getElementById("mic").onclick=()=>{try{rec.start()}catch(e){statusEl.textContent="Wait a moment and try again."}}}
-else{document.getElementById("mic").disabled=true;document.getElementById("mic").title="Speech recognition unavailable in this browser"}
-  function clearMasterMemory() {
-  history = [];
-
-  localStorage.removeItem("mission_master_history");
-
-  chat.innerHTML = "";
-
-  bubble("Memory cleared. Let's start a fresh conversation.", "assistant");
-  }
-</script></body></html>
+</script>
+</body>
+</html>
