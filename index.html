@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -14,6 +13,7 @@
   --panel: #111b2e;
   --line: #293b57;
   --muted: #a3b2c8;
+  --cyan: #65dcff;
 }
 
 * { box-sizing: border-box; }
@@ -129,17 +129,35 @@ h1 { font-size: 20px; margin: 0; }
 }
 
 .mic {
-  width: 58px;
-  height: 58px;
+  width: 52px;
+  height: 52px;
   border: 0;
   border-radius: 50%;
   background: linear-gradient(135deg,#65dcff,#8274ff);
-  font-size: 23px;
+  font-size: 22px;
   flex-shrink: 0;
+  color: #071322;
 }
 
 .mic.on {
   background: linear-gradient(135deg,#ff9d88,#ffcf70);
+}
+
+.btn {
+  background: #1b3452;
+  border: 1px solid #385272;
+  color: white;
+  border-radius: 12px;
+  padding: 11px 13px;
+  font-weight: 650;
+}
+
+.btn:disabled,.mic:disabled {
+  opacity: .5;
+}
+
+.voice-btn {
+  min-width: 105px;
 }
 
 .entry {
@@ -160,19 +178,6 @@ h1 { font-size: 20px; margin: 0; }
   font-size: 15px;
 }
 
-.btn {
-  background: #1b3452;
-  border: 1px solid #385272;
-  color: white;
-  border-radius: 12px;
-  padding: 10px 14px;
-  font-weight: 650;
-}
-
-.btn:disabled,.mic:disabled {
-  opacity: .5;
-}
-
 .tools {
   display: flex;
   gap: 8px;
@@ -187,6 +192,32 @@ h1 { font-size: 20px; margin: 0; }
   border-radius: 99px;
   padding: 8px 11px;
   font-size: 12px;
+}
+
+.speed-btn.active {
+  border-color: var(--cyan);
+  background: #245078;
+  color: white;
+}
+
+.voice-panel {
+  margin-top: 13px;
+  padding: 11px;
+  background: #0b1628;
+  border: 1px solid #293b57;
+  border-radius: 13px;
+}
+
+.voice-label {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 9px;
+}
+
+.speed-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .small {
@@ -212,7 +243,7 @@ h1 { font-size: 20px; margin: 0; }
   <div class="logo">M</div>
   <div>
     <h1>Mission Master AI</h1>
-    <div class="sub">Your personal voice-first assistant · V0.3</div>
+    <div class="sub">Your personal voice-first assistant · V0.4</div>
   </div>
 </header>
 
@@ -234,9 +265,18 @@ h1 { font-size: 20px; margin: 0; }
 <section class="card">
 
   <div class="controls">
-    <button class="mic" id="mic" title="Speak">🎙</button>
-    <button id="stopVoice" class="btn">⏹ Stop</button>
-    <button id="clearMemory" class="chip">Clear Memory</button>
+
+    <button class="mic" id="mic" title="Speak">
+      🎙
+    </button>
+
+    <button id="voiceToggle" class="btn voice-btn">
+      ▶ Replay
+    </button>
+
+    <button id="clearMemory" class="chip">
+      Clear Memory
+    </button>
 
     <div class="entry">
       <input
@@ -245,6 +285,25 @@ h1 { font-size: 20px; margin: 0; }
         autocomplete="off"
       >
       <button class="btn" id="send">Send</button>
+    </div>
+
+  </div>
+
+  <div class="voice-panel">
+    <div class="voice-label">SPEECH SPEED</div>
+
+    <div class="speed-controls">
+      <button class="chip speed-btn active" data-speed="1">
+        1× Normal
+      </button>
+
+      <button class="chip speed-btn" data-speed="1.5">
+        1.5× Fast
+      </button>
+
+      <button class="chip speed-btn" data-speed="2">
+        2× Very Fast
+      </button>
     </div>
   </div>
 
@@ -277,6 +336,7 @@ h1 { font-size: 20px; margin: 0; }
 </main>
 
 <script>
+
 // ============================================
 // 1. CONFIGURATION
 // ============================================
@@ -289,63 +349,21 @@ const input = document.getElementById("message");
 const statusEl = document.getElementById("status");
 const send = document.getElementById("send");
 const mic = document.getElementById("mic");
-const stopVoice = document.getElementById("stopVoice");
+const voiceToggle = document.getElementById("voiceToggle");
 
 let appPassword = null;
 let history = [];
 let recognition = null;
 let isListening = false;
 
-
-// ============================================
-// 2. LOAD SAVED CONVERSATION
-// ============================================
-
-function loadHistory() {
-  try {
-    const saved = localStorage.getItem("mission_master_history");
-    const parsed = saved ? JSON.parse(saved) : [];
-
-    if (Array.isArray(parsed)) {
-      history = parsed.filter(item =>
-        item &&
-        (item.role === "user" || item.role === "assistant") &&
-        typeof item.content === "string"
-      );
-    }
-  } catch (error) {
-    history = [];
-  }
-
-  if (history.length > 0) {
-    history.forEach(item => {
-      bubble(
-        item.content,
-        item.role === "user" ? "user" : "assistant"
-      );
-    });
-  } else {
-    bubble(
-      "Namaskaram! I am Mission Master AI. I can discuss questions using the connected AI brain. Try asking me something.",
-      "assistant"
-    );
-  }
-}
-
-function saveHistory() {
-  try {
-    localStorage.setItem(
-      "mission_master_history",
-      JSON.stringify(history)
-    );
-  } catch (error) {
-    console.warn("Conversation could not be saved:", error);
-  }
-}
+let speechSpeed = 1;
+let lastSpokenText = "";
+let speechPaused = false;
+let speechToken = 0;
 
 
 // ============================================
-// 3. CHAT DISPLAY
+// 2. CHAT DISPLAY
 // ============================================
 
 function bubble(text, role) {
@@ -362,11 +380,73 @@ function bubble(text, role) {
 
 
 // ============================================
+// 3. LOAD AND SAVE CONVERSATION
+// ============================================
+
+function saveHistory() {
+  try {
+    localStorage.setItem(
+      "mission_master_history",
+      JSON.stringify(history)
+    );
+  } catch (error) {
+    console.warn("Could not save conversation:", error);
+  }
+}
+
+function loadHistory() {
+  try {
+    const saved =
+      localStorage.getItem("mission_master_history");
+
+    const parsed = saved ? JSON.parse(saved) : [];
+
+    if (Array.isArray(parsed)) {
+      history = parsed.filter(item =>
+        item &&
+        (item.role === "user" || item.role === "assistant") &&
+        typeof item.content === "string"
+      ).slice(-12);
+    }
+  } catch (error) {
+    history = [];
+  }
+
+  if (history.length > 0) {
+    history.forEach(item => {
+      bubble(
+        item.content,
+        item.role === "user" ? "user" : "assistant"
+      );
+    });
+
+    const lastAssistant = [...history]
+      .reverse()
+      .find(item => item.role === "assistant");
+
+    if (lastAssistant) {
+      lastSpokenText = cleanForSpeech(
+        lastAssistant.content
+      );
+    }
+
+  } else {
+    bubble(
+      "Namaskaram! I am Mission Master AI. I can discuss questions using the connected AI brain. Try asking me something.",
+      "assistant"
+    );
+  }
+
+  updateVoiceButton();
+}
+
+
+// ============================================
 // 4. CLEAN MARKDOWN FOR SPEECH
 // ============================================
 
 function cleanForSpeech(text) {
-  return text
+  return String(text)
     .replace(/```[\s\S]*?```/g, " ")
     .replace(/^\s*[-*_]{3,}\s*$/gm, " ")
     .replace(/^\s*\|?[\s:|-]{3,}\|?\s*$/gm, " ")
@@ -385,7 +465,7 @@ function cleanForSpeech(text) {
 
 
 // ============================================
-// 5. TEXT TO SPEECH
+// 5. TELUGU VOICE
 // ============================================
 
 function getTeluguVoice() {
@@ -400,17 +480,56 @@ function getTeluguVoice() {
   );
 }
 
+
+// ============================================
+// 6. VOICE PLAYER
+// ============================================
+
+function updateVoiceButton() {
+  if (!("speechSynthesis" in window)) {
+    voiceToggle.textContent = "Voice unavailable";
+    voiceToggle.disabled = true;
+    return;
+  }
+
+  if (speechSynthesis.paused) {
+    voiceToggle.textContent = "▶ Resume";
+
+  } else if (speechSynthesis.speaking) {
+    voiceToggle.textContent = "⏸ Pause";
+
+  } else if (lastSpokenText) {
+    voiceToggle.textContent = "▶ Replay";
+
+  } else {
+    voiceToggle.textContent = "▶ Speak";
+  }
+}
+
+
 function speak(text) {
-  if (!("speechSynthesis" in window)) return;
+  if (!("speechSynthesis" in window)) {
+    statusEl.textContent = "Speech is not supported";
+    return;
+  }
+
+  const cleanText = cleanForSpeech(text);
+
+  if (!cleanText) return;
+
+  lastSpokenText = cleanText;
+  speechPaused = false;
+
+  // Prevent old speech callbacks from changing the new player state.
+  const myToken = ++speechToken;
 
   speechSynthesis.cancel();
 
-  const cleanText = cleanForSpeech(text);
-  if (!cleanText) return;
+  const utterance =
+    new SpeechSynthesisUtterance(cleanText);
 
-  const utterance = new SpeechSynthesisUtterance(cleanText);
-
-  const isTelugu = /[\u0C00-\u0C7F]/.test(cleanText);
+  const isTelugu =
+    /[\u0C00-\u0C7F]/.test(cleanText);
 
   if (isTelugu) {
     const voice = getTeluguVoice();
@@ -424,58 +543,154 @@ function speak(text) {
     utterance.lang = "en-IN";
   }
 
-  utterance.rate = 0.92;
+  utterance.rate = speechSpeed;
   utterance.pitch = 1;
 
   utterance.onstart = () => {
+    if (myToken !== speechToken) return;
+
+    speechPaused = false;
+    updateVoiceButton();
     statusEl.textContent = "● Speaking…";
   };
 
   utterance.onend = () => {
-    if (!isListening) {
-      statusEl.textContent = "● Connected · Ready";
-    }
+    if (myToken !== speechToken) return;
+
+    speechPaused = false;
+    updateVoiceButton();
+    statusEl.textContent = "● Connected · Ready";
   };
 
-  utterance.onerror = () => {
-    statusEl.textContent = "● Connected · Ready";
+  utterance.onerror = event => {
+    if (myToken !== speechToken) return;
+
+    if (event.error === "interrupted" ||
+        event.error === "canceled") {
+      return;
+    }
+
+    speechPaused = false;
+    updateVoiceButton();
+    statusEl.textContent = "● Speech error";
   };
 
   speechSynthesis.speak(utterance);
 }
 
+
+// ============================================
+// 7. PAUSE / RESUME / REPLAY
+// ============================================
+
+voiceToggle.onclick = () => {
+  if (!("speechSynthesis" in window)) return;
+
+  if (speechSynthesis.speaking &&
+      !speechSynthesis.paused) {
+
+    speechSynthesis.pause();
+    speechPaused = true;
+
+    statusEl.textContent = "● Speech paused";
+
+  } else if (speechSynthesis.paused) {
+
+    speechSynthesis.resume();
+    speechPaused = false;
+
+    statusEl.textContent = "● Speaking…";
+
+  } else if (lastSpokenText) {
+
+    speak(lastSpokenText);
+
+  } else {
+
+    statusEl.textContent =
+      "● No AI reply available to play";
+  }
+
+  updateVoiceButton();
+};
+
+
+// ============================================
+// 8. SPEECH SPEED CONTROLS
+// ============================================
+
+document.querySelectorAll(".speed-btn").forEach(button => {
+
+  button.onclick = () => {
+
+    const newSpeed =
+      Number(button.dataset.speed);
+
+    speechSpeed = newSpeed;
+
+    document.querySelectorAll(".speed-btn").forEach(b => {
+      b.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    const isCurrentlyPlaying =
+      speechSynthesis.speaking ||
+      speechSynthesis.paused;
+
+    if (isCurrentlyPlaying && lastSpokenText) {
+      // Restart the current reply at the new speed.
+      speak(lastSpokenText);
+    }
+
+    statusEl.textContent =
+      "● Speech speed: " + speechSpeed + "×";
+  };
+
+});
+
 if ("speechSynthesis" in window) {
   speechSynthesis.onvoiceschanged = () => {
-    console.log("Available voices:", speechSynthesis.getVoices());
+    console.log(
+      "Available voices:",
+      speechSynthesis.getVoices()
+    );
   };
 }
 
 
 // ============================================
-// 6. CLEAR CONVERSATION MEMORY
+// 9. CLEAR MEMORY
 // ============================================
 
 function clearMasterMemory() {
   history = [];
+  lastSpokenText = "";
+  speechPaused = false;
 
-  try {
-    localStorage.removeItem("mission_master_history");
-  } catch (error) {
-    console.warn("Could not clear saved history:", error);
-  }
-
-  chat.innerHTML = "";
+  speechToken++;
 
   if ("speechSynthesis" in window) {
     speechSynthesis.cancel();
   }
+
+  try {
+    localStorage.removeItem("mission_master_history");
+  } catch (error) {
+    console.warn("Could not clear history:", error);
+  }
+
+  chat.innerHTML = "";
 
   bubble(
     "Memory cleared. Let's start a fresh conversation.",
     "assistant"
   );
 
-  statusEl.textContent = "● Ready · Fresh conversation";
+  updateVoiceButton();
+
+  statusEl.textContent =
+    "● Ready · Fresh conversation";
 }
 
 document.getElementById("clearMemory").onclick =
@@ -483,13 +698,24 @@ document.getElementById("clearMemory").onclick =
 
 
 // ============================================
-// 7. ASK AI
+// 10. ASK AI
 // ============================================
 
 async function ask(text) {
+
   text = String(text || "").trim();
 
   if (!text || send.disabled) return;
+
+  // Stop old speech when a new question is submitted.
+  if ("speechSynthesis" in window) {
+    speechSynthesis.cancel();
+  }
+
+  speechToken++;
+  speechPaused = false;
+
+  updateVoiceButton();
 
   bubble(text, "user");
   input.value = "";
@@ -498,6 +724,7 @@ async function ask(text) {
   statusEl.textContent = "● Thinking…";
 
   try {
+
     if (!appPassword) {
       appPassword = prompt(
         "Enter your Mission Master private access password (not your Groq API key):"
@@ -505,10 +732,13 @@ async function ask(text) {
     }
 
     if (!appPassword) {
-      throw new Error("Private access password was not entered.");
+      throw new Error(
+        "Private access password was not entered."
+      );
     }
 
     const response = await fetch(API_BASE + "/chat", {
+
       method: "POST",
 
       headers: {
@@ -520,6 +750,7 @@ async function ask(text) {
         message: text,
         history: history.slice(-12)
       })
+
     });
 
     let data;
@@ -527,16 +758,20 @@ async function ask(text) {
     try {
       data = await response.json();
     } catch (error) {
-      throw new Error("Invalid response from the AI server.");
+      throw new Error(
+        "Invalid response from the AI server."
+      );
     }
 
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
+
+      if (response.status === 401 ||
+          response.status === 403) {
         appPassword = null;
       }
 
       throw new Error(
-        data.error || "AI request failed. Please try again."
+        data.error || "AI request failed."
       );
     }
 
@@ -556,9 +791,8 @@ async function ask(text) {
 
     speak(answer);
 
-    statusEl.textContent = "● Connected · Ready";
-
   } catch (error) {
+
     bubble(
       "Connection note: " + error.message,
       "assistant"
@@ -568,6 +802,7 @@ async function ask(text) {
       "● Needs setup / connection check";
 
   } finally {
+
     send.disabled = false;
     input.focus();
   }
@@ -575,7 +810,7 @@ async function ask(text) {
 
 
 // ============================================
-// 8. SEND BUTTON AND ENTER KEY
+// 11. SEND BUTTON
 // ============================================
 
 send.onclick = () => ask(input.value);
@@ -588,7 +823,7 @@ input.addEventListener("keydown", event => {
 
 
 // ============================================
-// 9. QUICK PROMPT BUTTONS
+// 12. QUICK PROMPTS
 // ============================================
 
 document.querySelectorAll("[data-q]").forEach(button => {
@@ -597,7 +832,7 @@ document.querySelectorAll("[data-q]").forEach(button => {
 
 
 // ============================================
-// 10. VOICE RECOGNITION
+// 13. MICROPHONE INPUT
 // ============================================
 
 const SR =
@@ -605,6 +840,7 @@ const SR =
   window.webkitSpeechRecognition;
 
 if (SR) {
+
   recognition = new SR();
 
   recognition.lang = "te-IN";
@@ -613,11 +849,14 @@ if (SR) {
 
   recognition.onstart = () => {
     isListening = true;
+
     mic.classList.add("on");
+
     statusEl.textContent = "● Listening…";
   };
 
   recognition.onresult = event => {
+
     const transcript =
       event.results[0][0].transcript;
 
@@ -627,62 +866,54 @@ if (SR) {
   };
 
   recognition.onerror = event => {
+
     statusEl.textContent =
       "Voice error: " + event.error;
   };
 
   recognition.onend = () => {
+
     isListening = false;
+
     mic.classList.remove("on");
   };
 
   mic.onclick = () => {
+
     try {
+
       if (isListening) {
         recognition.stop();
+
       } else {
+
         if ("speechSynthesis" in window) {
           speechSynthesis.cancel();
         }
 
+        speechToken++;
+
         recognition.start();
       }
+
     } catch (error) {
+
       statusEl.textContent =
         "Wait a moment and try again.";
     }
   };
 
 } else {
+
   mic.disabled = true;
+
   mic.title =
     "Speech recognition unavailable in this browser";
 }
 
 
 // ============================================
-// 11. STOP SPEECH AND MICROPHONE
-// ============================================
-
-stopVoice.onclick = () => {
-  if ("speechSynthesis" in window) {
-    speechSynthesis.cancel();
-  }
-
-  if (recognition && isListening) {
-    recognition.abort();
-  }
-
-  isListening = false;
-  mic.classList.remove("on");
-
-  statusEl.textContent =
-    "● Stopped · Ready for your next command";
-};
-
-
-// ============================================
-// 12. START APP
+// 14. INITIALIZE APP
 // ============================================
 
 loadHistory();
