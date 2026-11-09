@@ -1,92 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080d1b">
 <title>Mission Master AI</title>
 <style>
-:root{color-scheme:dark;--bg:#080d1b;--panel:#111a2d;--line:#263650;--muted:#9aabc4;--accent:#62d5ff;--green:#70e0b0}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 0,#15294a 0,#080d1b 48%);font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#f4f7ff;min-height:100vh}
-main{max-width:720px;margin:auto;padding:22px 16px 36px}.top{display:flex;align-items:center;gap:12px}.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#54d8ff,#7468ff);display:grid;place-items:center;font-size:23px;color:#06101d;font-weight:900;box-shadow:0 0 28px #4ecfff55}
-h1{font-size:21px;margin:0}.sub{font-size:12px;color:var(--muted);margin-top:3px}.status{margin:22px 0 16px;padding:12px 14px;border:1px solid var(--line);background:#101a2c;border-radius:14px;color:var(--muted);font-size:13px;display:flex;align-items:center;gap:9px}.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
-.hero{text-align:center;padding:22px 10px 18px}.orb{width:144px;height:144px;margin:0 auto 16px;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#8deaff,#3977d7 42%,#21265d 72%,#11162c);box-shadow:0 0 35px #38c7ff55, inset 0 0 25px #d6f8ff55;font-size:48px;border:1px solid #8be7ff66}.hero p{color:var(--muted);font-size:14px;margin:6px 0}.card{background:#101a2cdd;border:1px solid var(--line);border-radius:18px;padding:15px;margin:13px 0}.label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}.chat{min-height:115px;max-height:270px;overflow:auto;display:flex;flex-direction:column;gap:10px;margin-top:12px}.bubble{padding:11px 13px;border-radius:14px;line-height:1.45;font-size:14px;max-width:92%;white-space:pre-wrap}.bot{background:#1a2942;align-self:flex-start}.user{background:#16415b;align-self:flex-end}.controls{display:flex;gap:9px;align-items:center}.mic{width:64px;height:64px;border:0;border-radius:50%;background:linear-gradient(135deg,#5ce0ff,#7774ff);color:#07101d;font-size:25px;font-weight:800;flex-shrink:0}.mic.listening{background:linear-gradient(135deg,#ff8c8c,#ffca70);box-shadow:0 0 22px #ff8c8c88}.entry{display:flex;gap:8px;flex:1}.entry input{min-width:0;flex:1;background:#080f1d;border:1px solid var(--line);border-radius:13px;padding:13px;color:white;font-size:15px;outline:none}.send,.secondary{border:1px solid var(--line);background:#1b2a43;color:#eaf6ff;border-radius:12px;padding:0 15px;font-weight:650}.hint{font-size:12px;color:var(--muted);line-height:1.55;margin-top:12px}.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.chip{border:1px solid #344a68;background:#14223a;color:#d8eaff;padding:8px 11px;border-radius:999px;font-size:12px}.footer{font-size:11px;color:#8293ad;text-align:center;margin-top:20px}
-</style>
-</head>
-<body>
-<main>
-  <header class="top">
-    <div class="logo">M</div>
-    <div><h1>Mission Master AI</h1><div class="sub">Your personal voice-first assistant · Day 1 prototype</div></div>
-  </header>
-  <div class="status"><span class="dot"></span><span id="status">Ready · Tap the microphone and speak</span></div>
-  <section class="hero">
-    <div class="orb">✦</div>
-    <h2 style="font-size:20px;margin:0">Hello, I'm your Master.</h2>
-    <p>Talk to me in English or Telugu.</p>
-  </section>
-  <section class="card">
-    <div class="label">Conversation</div>
-    <div id="chat" class="chat" aria-live="polite">
-      <div class="bubble bot">Welcome! I am your Mission Master AI prototype. Try saying “search NIFTY news” or “what can you do?”</div>
-    </div>
-  </section>
-  <section class="card">
-    <div class="controls">
-      <button id="mic" class="mic" aria-label="Start voice input">🎙</button>
-      <div class="entry">
-        <input id="command" placeholder="Type a command…" autocomplete="off">
-        <button id="send" class="send">Send</button>
-      </div>
-    </div>
-    <div class="hint" id="voiceHint">Voice input uses your browser's speech recognition. Allow microphone access when asked. If voice is unavailable, type your request.</div>
-    <div class="chips">
-      <button class="chip" data-cmd="What can you do?">What can you do?</button>
-      <button class="chip" data-cmd="Search NIFTY news">Search NIFTY news</button>
-      <button class="chip" data-cmd="Search train from SKM to SC">Find a train</button>
-      <button class="chip" data-cmd="Explain AI agents">Explain AI agents</button>
-    </div>
-  </section>
-  <div class="footer">Day 1 · Safe prototype · No passwords or payments handled</div>
+:root{color-scheme:dark;--bg:#080d1b;--panel:#111b2e;--line:#293b57;--muted:#a3b2c8;--cyan:#65dcff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#1b3761,#080d1b 55%);color:#f4f7ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+main{max-width:760px;margin:auto;padding:20px 15px 35px}.top{display:flex;gap:12px;align-items:center}.logo{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#65dcff,#8274ff);display:grid;place-items:center;color:#08101d;font-size:24px;font-weight:900}h1{font-size:20px;margin:0}.sub,.muted{color:var(--muted);font-size:12px}.status{margin:19px 0;padding:11px 13px;background:#111c30;border:1px solid var(--line);border-radius:13px;font-size:13px;color:var(--muted)}.hero{text-align:center;padding:14px 0}.orb{width:112px;height:112px;margin:auto auto 12px;border-radius:50%;display:grid;place-items:center;font-size:42px;background:radial-gradient(circle at 35% 25%,#b3f5ff,#4789e8 45%,#26265f 78%);box-shadow:0 0 35px #46caff55}.card{background:#111b2eeb;border:1px solid var(--line);border-radius:17px;padding:14px;margin:12px 0}.chat{height:330px;overflow:auto;display:flex;flex-direction:column;gap:9px;margin-top:12px}.bubble{padding:11px 13px;border-radius:14px;max-width:92%;font-size:14px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere}.bot{background:#1b2b45;align-self:flex-start}.user{background:#16445f;align-self:flex-end}.controls{display:flex;gap:9px}.mic{width:58px;height:58px;border:0;border-radius:50%;background:linear-gradient(135deg,#65dcff,#8274ff);font-size:23px;flex-shrink:0}.mic.on{background:linear-gradient(135deg,#ff9d88,#ffcf70)}.entry{display:flex;gap:7px;flex:1}.entry input{min-width:0;flex:1;background:#080f1d;border:1px solid var(--line);border-radius:12px;padding:12px;color:white;font-size:15px}.btn{background:#1b3452;border:1px solid #385272;color:white;border-radius:12px;padding:0 14px;font-weight:650}.btn:disabled{opacity:.5}.tools{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.chip{background:#152943;border:1px solid #354d6d;color:#dcecff;border-radius:99px;padding:8px 11px;font-size:12px}.small{font-size:11px;color:var(--muted);line-height:1.5;margin-top:10px}.footer{text-align:center;color:#8293ad;font-size:11px;margin-top:18px}
+</style></head>
+<body><main>
+<header class="top"><div class="logo">M</div><div><h1>Mission Master AI</h1><div class="sub">Your personal voice-first assistant · V0.2</div></div></header>
+<div class="status" id="status">● Ready · AI connection not checked yet</div>
+<section class="hero"><div class="orb">✦</div><h2 style="margin:0;font-size:20px">What shall we do today?</h2><p class="muted">Talk or type in English or Telugu.</p></section>
+<section class="card"><div class="muted">CONVERSATION</div><div class="chat" id="chat" aria-live="polite"><div class="bubble bot">Namaskaram! I am Mission Master AI. I can discuss questions using the connected AI brain. Try asking me something.</div></div></section>
+<section class="card">
+<div class="controls"><button class="mic" id="mic" title="Speak">🎙</button><div class="entry"><input id="message" placeholder="Ask Mission Master…" autocomplete="off"><button class="btn" id="send">Send</button></div></div>
+<div class="tools"><button class="chip" data-q="Explain AI agents in simple Telugu">Explain in Telugu</button><button class="chip" data-q="What can you help me with?">What can you do?</button><button class="chip" data-q="Give me today's NIFTY research checklist">NIFTY checklist</button></div>
+<div class="small">Voice recognition requires a supported browser and microphone permission. AI replies use your configured backend. Do not enter passwords, OTPs, card details or other secrets.</div>
+</section>
+<div class="footer">Mission Master AI · Personal prototype · You approve consequential actions</div>
 </main>
 <script>
-const chat=document.getElementById('chat'), statusEl=document.getElementById('status');
-const input=document.getElementById('command'), mic=document.getElementById('mic');
-function addBubble(text,who){const el=document.createElement('div');el.className='bubble '+who;el.textContent=text;chat.appendChild(el);chat.scrollTop=chat.scrollHeight}
-function speak(text){if(!('speechSynthesis' in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=/[\u0C00-\u0C7F]/.test(text)?'te-IN':'en-IN';u.rate=1;window.speechSynthesis.speak(u)}
-function reply(text,shouldSpeak=true){addBubble(text,'bot');if(shouldSpeak)speak(text)}
-function handleCommand(raw){
- const q=raw.trim();if(!q)return;addBubble(q,'user');input.value='';
- const s=q.toLowerCase();
- if(/what can you do|help|నీతో ఏమి|ఏం చేయగలవు/.test(s)){
-   reply("Day 1 prototype: I can talk back, understand a few starter commands and open a web search. Next we will add a secure AI brain, live research tools and permitted task automation. I cannot book tickets or make payments yet.");
- }else if(/^(search|find|look up)\s+/.test(s)||/search/.test(s)){
-   const term=q.replace(/^(search|find|look up)\s*/i,'').replace(/^(for\s*)/i,'').trim()||q;
-   reply("I'll open a web search for: "+term+". Check the results before relying on them.");
-   window.open('https://www.google.com/search?q='+encodeURIComponent(term),'_blank','noopener');
- }else if(/train|irctc|ticket/.test(s)){
-   reply("I can help plan the search, but ticket booking is not connected yet. Please verify stations and date on the official IRCTC website. We will add compliant booking assistance in a later phase.");
- }else if(/hello|హలో|నమస్కారం/.test(s)){
-   reply("Hello! నమస్కారం! What would you like me to help with?");
- }else if(/time|date|today|తేదీ|సమయం/.test(s)){
-   reply("Your device time is "+new Date().toLocaleString()+".");
- }else{
-   reply("I heard: "+q+". My Day 1 command engine is still basic. Try “search …”, “find a train”, or “what can you do?”. In Day 2 we will connect a real AI model.");
- }
+const API_BASE="https://mission-master-ai-api.chopparapardhu.workers.dev";
+const chat=document.getElementById("chat"), input=document.getElementById("message"), statusEl=document.getElementById("status"), send=document.getElementById("send");
+let history=[]; let appPassword=null;
+function bubble(text,role){let d=document.createElement("div");d.className="bubble "+(role==="user"?"user":"bot");d.textContent=text;chat.appendChild(d);chat.scrollTop=chat.scrollHeight}
+function speak(text){if(!("speechSynthesis"in window))return; speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(text);u.lang=/[\u0C00-\u0C7F]/.test(text)?"te-IN":"en-IN";speechSynthesis.speak(u)}
+async function ask(text){
+ text=text.trim();if(!text)return;
+ bubble(text,"user");input.value="";send.disabled=true;statusEl.textContent="● Thinking…";
+ try{
+  if(API_BASE.includes("YOUR-WORKER-NAME"))throw new Error("Backend URL not configured yet. Follow the Day 2 setup guide.");
+  if(!appPassword){appPassword=prompt("Enter your Mission Master private access password (not your Groq API key):");}
+  if(!appPassword)throw new Error("Private access password was not entered.");
+  const r=await fetch(API_BASE+"/chat",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+appPassword},body:JSON.stringify({message:text,history:history.slice(-12)})});
+  const data=await r.json();if(!r.ok)throw new Error(data.error||"AI request failed");
+  const answer=data.reply||"I could not generate a reply.";
+  history.push({role:"user",content:text},{role:"assistant",content:answer});history=history.slice(-12);
+  bubble(answer,"assistant");speak(answer);statusEl.textContent="● Connected · Ready";
+ }catch(e){bubble("Connection note: "+e.message,"assistant");statusEl.textContent="● Needs setup / connection check";}
+ finally{send.disabled=false;input.focus()}
 }
-document.getElementById('send').addEventListener('click',()=>handleCommand(input.value));
-input.addEventListener('keydown',e=>{if(e.key==='Enter')handleCommand(input.value)});
-document.querySelectorAll('[data-cmd]').forEach(b=>b.addEventListener('click',()=>handleCommand(b.dataset.cmd)));
-const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(!SpeechRecognition){mic.disabled=true;mic.style.opacity='.45';document.getElementById('voiceHint').textContent='Speech recognition is not available in this browser. Open this app in Chrome on Android, or use the text box.';}
-else{
- const recognition=new SpeechRecognition();recognition.lang='en-IN';recognition.interimResults=false;recognition.maxAlternatives=1;
- recognition.onstart=()=>{mic.classList.add('listening');statusEl.textContent='Listening… speak now';};
- recognition.onend=()=>{mic.classList.remove('listening');statusEl.textContent='Ready · Tap the microphone and speak';};
- recognition.onerror=e=>{statusEl.textContent='Voice issue: '+e.error+'. You can type instead.';};
- recognition.onresult=e=>{const said=e.results[0][0].transcript;input.value=said;handleCommand(said);};
- mic.addEventListener('click',()=>{try{recognition.start()}catch(e){statusEl.textContent='Please wait a moment, then tap the microphone again.';}});
-}
-</script>
-</body>
-</html>
+send.onclick=()=>ask(input.value);input.addEventListener("keydown",e=>{if(e.key==="Enter")ask(input.value)});
+document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>ask(b.dataset.q));
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(SR){let rec=new SR();rec.lang="te-IN";rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{document.getElementById("mic").classList.add("on");statusEl.textContent="● Listening…"};rec.onend=()=>document.getElementById("mic").classList.remove("on");rec.onerror=e=>statusEl.textContent="Voice error: "+e.error;rec.onresult=e=>ask(e.results[0][0].transcript);document.getElementById("mic").onclick=()=>{try{rec.start()}catch(e){statusEl.textContent="Wait a moment and try again."}}}
+else{document.getElementById("mic").disabled=true;document.getElementById("mic").title="Speech recognition unavailable in this browser"}
+</script></body></html>
