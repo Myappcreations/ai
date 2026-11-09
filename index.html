@@ -366,13 +366,23 @@ let speechToken = 0;
 // 2. CHAT DISPLAY
 // ============================================
 
+function displayCleanText(text) {
+  return String(text)
+    .replace(/\\([*_~`])/g, "$1")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
 function bubble(text, role) {
   const d = document.createElement("div");
 
   d.className =
     "bubble " + (role === "user" ? "user" : "bot");
 
-  d.textContent = text;
+  d.textContent = displayCleanText(text);
 
   chat.appendChild(d);
   chat.scrollTop = chat.scrollHeight;
