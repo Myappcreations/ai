@@ -18,6 +18,9 @@ main{max-width:760px;margin:auto;padding:20px 15px 35px}.top{display:flex;gap:12
 <section class="card">
 <div class="controls"><button class="mic" id="mic" title="Speak">🎙</button>
   <button id="stopVoice" class="btn">⏹ Stop</button>
+  <button class="chip" onclick="clearMasterMemory()">
+  Clear Memory
+</button>
   <div class="entry"><input id="message" placeholder="Ask Mission Master…" autocomplete="off"><button class="btn" id="send">Send</button></div></div>
 <div class="tools"><button class="chip" data-q="Explain AI agents in simple Telugu">Explain in Telugu</button><button class="chip" data-q="What can you help me with?">What can you do?</button><button class="chip" data-q="Give me today's NIFTY research checklist">NIFTY checklist</button></div>
 <div class="small">Voice recognition requires a supported browser and microphone permission. AI replies use your configured backend. Do not enter passwords, OTPs, card details or other secrets.</div>
@@ -27,7 +30,16 @@ main{max-width:760px;margin:auto;padding:20px 15px 35px}.top{display:flex;gap:12
 <script>
 const API_BASE="https://mission-master-ai-api.chopparapardhu.workers.dev";
 const chat=document.getElementById("chat"), input=document.getElementById("message"), statusEl=document.getElementById("status"), send=document.getElementById("send");
-let history=[]; let appPassword=null;
+let history = [];
+
+try {
+  history = JSON.parse(
+    localStorage.getItem("mission_master_history") || "[]"
+  );
+} catch(e) {
+  history = [];
+}
+  let appPassword=null;
 function bubble(text,role){let d=document.createElement("div");d.className="bubble "+(role==="user"?"user":"bot");d.textContent=text;chat.appendChild(d);chat.scrollTop=chat.scrollHeight}
 
 function cleanForSpeech(text) {
@@ -118,6 +130,16 @@ speechSynthesis.onvoiceschanged = () => {
   console.log("Available voices:", speechSynthesis.getVoices());
 };
 
+  function clearMasterMemory() {
+  history = [];
+
+  localStorage.removeItem("mission_master_history");
+
+  chat.innerHTML = "";
+
+  bubble("Memory cleared. Let's start a fresh conversation.", "assistant");
+}
+
 
  async function ask(text){
  text=text.trim();if(!text)return;
@@ -129,7 +151,17 @@ speechSynthesis.onvoiceschanged = () => {
   const r=await fetch(API_BASE+"/chat",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+appPassword},body:JSON.stringify({message:text,history:history.slice(-12)})});
   const data=await r.json();if(!r.ok)throw new Error(data.error||"AI request failed");
   const answer=data.reply||"I could not generate a reply.";
-  history.push({role:"user",content:text},{role:"assistant",content:answer});history=history.slice(-12);
+  history.push(
+  {role:"user",content:text},
+  {role:"assistant",content:answer}
+);
+
+history = history.slice(-12);
+
+localStorage.setItem(
+  "mission_master_history",
+  JSON.stringify(history)
+);
   bubble(answer,"assistant");speak(answer);statusEl.textContent="● Connected · Ready";
  }catch(e){bubble("Connection note: "+e.message,"assistant");statusEl.textContent="● Needs setup / connection check";}
  finally{send.disabled=false;input.focus()}
@@ -140,4 +172,13 @@ const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 if(SR){let rec = new SR();
 window.currentRecognition = rec;rec.lang="te-IN";rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{document.getElementById("mic").classList.add("on");statusEl.textContent="● Listening…"};rec.onend=()=>document.getElementById("mic").classList.remove("on");rec.onerror=e=>statusEl.textContent="Voice error: "+e.error;rec.onresult=e=>ask(e.results[0][0].transcript);document.getElementById("mic").onclick=()=>{try{rec.start()}catch(e){statusEl.textContent="Wait a moment and try again."}}}
 else{document.getElementById("mic").disabled=true;document.getElementById("mic").title="Speech recognition unavailable in this browser"}
+  function clearMasterMemory() {
+  history = [];
+
+  localStorage.removeItem("mission_master_history");
+
+  chat.innerHTML = "";
+
+  bubble("Memory cleared. Let's start a fresh conversation.", "assistant");
+  }
 </script></body></html>
