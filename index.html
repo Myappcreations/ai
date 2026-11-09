@@ -27,8 +27,69 @@ const API_BASE="https://mission-master-ai-api.chopparapardhu.workers.dev";
 const chat=document.getElementById("chat"), input=document.getElementById("message"), statusEl=document.getElementById("status"), send=document.getElementById("send");
 let history=[]; let appPassword=null;
 function bubble(text,role){let d=document.createElement("div");d.className="bubble "+(role==="user"?"user":"bot");d.textContent=text;chat.appendChild(d);chat.scrollTop=chat.scrollHeight}
-function speak(text){if(!("speechSynthesis"in window))return; speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(text);u.lang=/[\u0C00-\u0C7F]/.test(text)?"te-IN":"en-IN";speechSynthesis.speak(u)}
-async function ask(text){
+
+function cleanForSpeech(text) {
+
+  return text
+
+    // Remove code blocks
+    .replace(/```[\s\S]*?```/g, " ")
+
+    // Remove horizontal separators
+    .replace(/^\s*[-*_]{3,}\s*$/gm, " ")
+
+    // Remove Markdown table separator rows
+    .replace(/^\s*\|?[\s:|-]{3,}\|?\s*$/gm, " ")
+
+    // Convert table columns into natural pauses
+    .replace(/\|/g, ", ")
+
+    // Remove bold and italic symbols
+    .replace(/\*\*|__/g, "")
+    .replace(/[*_~]/g, "")
+
+    // Remove headings
+    .replace(/^#{1,6}\s*/gm, "")
+
+    // Remove bullet symbols
+    .replace(/^\s*[-+•]\s+/gm, "")
+
+    // Remove numbered list formatting
+    .replace(/^\s*\d+[.)]\s+/gm, "")
+
+    // Convert Markdown links to their visible text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+
+    // Remove remaining repeated separators
+    .replace(/-{3,}/g, " ")
+
+    // Clean extra spaces and empty lines
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\n{2,}/g, ". ")
+    .trim();
+}
+
+function speak(text) {
+
+  if (!("speechSynthesis" in window)) return;
+
+  speechSynthesis.cancel();
+
+  const cleanText = cleanForSpeech(text);
+
+  const u = new SpeechSynthesisUtterance(cleanText);
+
+  u.lang = /[\u0C00-\u0C7F]/.test(cleanText)
+    ? "te-IN"
+    : "en-IN";
+
+  u.rate = 0.95;
+  u.pitch = 1;
+
+  speechSynthesis.speak(u);
+}
+
+ async function ask(text){
  text=text.trim();if(!text)return;
  bubble(text,"user");input.value="";send.disabled=true;statusEl.textContent="● Thinking…";
  try{
