@@ -16,7 +16,9 @@ main{max-width:760px;margin:auto;padding:20px 15px 35px}.top{display:flex;gap:12
 <section class="hero"><div class="orb">✦</div><h2 style="margin:0;font-size:20px">What shall we do today?</h2><p class="muted">Talk or type in English or Telugu.</p></section>
 <section class="card"><div class="muted">CONVERSATION</div><div class="chat" id="chat" aria-live="polite"><div class="bubble bot">Namaskaram! I am Mission Master AI. I can discuss questions using the connected AI brain. Try asking me something.</div></div></section>
 <section class="card">
-<div class="controls"><button class="mic" id="mic" title="Speak">🎙</button><div class="entry"><input id="message" placeholder="Ask Mission Master…" autocomplete="off"><button class="btn" id="send">Send</button></div></div>
+<div class="controls"><button class="mic" id="mic" title="Speak">🎙</button>
+  <button id="stopVoice" class="btn">⏹ Stop</button>
+  <div class="entry"><input id="message" placeholder="Ask Mission Master…" autocomplete="off"><button class="btn" id="send">Send</button></div></div>
 <div class="tools"><button class="chip" data-q="Explain AI agents in simple Telugu">Explain in Telugu</button><button class="chip" data-q="What can you help me with?">What can you do?</button><button class="chip" data-q="Give me today's NIFTY research checklist">NIFTY checklist</button></div>
 <div class="small">Voice recognition requires a supported browser and microphone permission. AI replies use your configured backend. Do not enter passwords, OTPs, card details or other secrets.</div>
 </section>
@@ -69,25 +71,53 @@ function cleanForSpeech(text) {
     .trim();
 }
 
-function speak(text) {
 
+function getTeluguVoice() {
+  const voices = speechSynthesis.getVoices();
+
+  return voices.find(v =>
+    v.lang.toLowerCase() === "te-in"
+  ) || voices.find(v =>
+    v.lang.toLowerCase().startsWith("te")
+  );
+}
+
+function speak(text) {
   if (!("speechSynthesis" in window)) return;
 
   speechSynthesis.cancel();
 
   const cleanText = cleanForSpeech(text);
 
-  const u = new SpeechSynthesisUtterance(cleanText);
+  if (!cleanText) return;
 
-  u.lang = /[\u0C00-\u0C7F]/.test(cleanText)
-    ? "te-IN"
-    : "en-IN";
+  const utterance = new SpeechSynthesisUtterance(cleanText);
 
-  u.rate = 0.95;
-  u.pitch = 1;
+  const isTelugu = /[\u0C00-\u0C7F]/.test(cleanText);
 
-  speechSynthesis.speak(u);
+  if (isTelugu) {
+    const voice = getTeluguVoice();
+
+    utterance.lang = "te-IN";
+
+    if (voice) {
+      utterance.voice = voice;
+    }
+  } else {
+    utterance.lang = "en-IN";
+  }
+
+  utterance.rate = 0.92;
+  utterance.pitch = 1;
+
+  speechSynthesis.speak(utterance);
 }
+
+// Load available voices
+speechSynthesis.onvoiceschanged = () => {
+  console.log("Available voices:", speechSynthesis.getVoices());
+};
+
 
  async function ask(text){
  text=text.trim();if(!text)return;
@@ -107,6 +137,7 @@ function speak(text) {
 send.onclick=()=>ask(input.value);input.addEventListener("keydown",e=>{if(e.key==="Enter")ask(input.value)});
 document.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>ask(b.dataset.q));
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-if(SR){let rec=new SR();rec.lang="te-IN";rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{document.getElementById("mic").classList.add("on");statusEl.textContent="● Listening…"};rec.onend=()=>document.getElementById("mic").classList.remove("on");rec.onerror=e=>statusEl.textContent="Voice error: "+e.error;rec.onresult=e=>ask(e.results[0][0].transcript);document.getElementById("mic").onclick=()=>{try{rec.start()}catch(e){statusEl.textContent="Wait a moment and try again."}}}
+if(SR){let rec = new SR();
+window.currentRecognition = rec;rec.lang="te-IN";rec.interimResults=false;rec.maxAlternatives=1;rec.onstart=()=>{document.getElementById("mic").classList.add("on");statusEl.textContent="● Listening…"};rec.onend=()=>document.getElementById("mic").classList.remove("on");rec.onerror=e=>statusEl.textContent="Voice error: "+e.error;rec.onresult=e=>ask(e.results[0][0].transcript);document.getElementById("mic").onclick=()=>{try{rec.start()}catch(e){statusEl.textContent="Wait a moment and try again."}}}
 else{document.getElementById("mic").disabled=true;document.getElementById("mic").title="Speech recognition unavailable in this browser"}
 </script></body></html>
